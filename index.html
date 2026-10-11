@@ -1,0 +1,769 @@
+<title>Choque de Mundos</title>
+<style>
+  /* Layout concept: asymmetric dossier scroll. Full-bleed hero bleeds to the
+     edges; body content sits in a left-weighted column with a wide right
+     margin, like the gloss beside a manuscript page. Character entries
+     alternate indent so the page never settles into a grid. Single
+     committed dark world (a field dossier read by lantern light), so the
+     palette is declared once rather than mirrored for a light theme. */
+  :root{
+    --ink:#0b0c0f;
+    --surface:#15171d;
+    --surface-2:#1c1f27;
+    --line: rgba(232,225,208,0.14);
+    --parchment:#e9e2d1;
+    --muted:#9b9484;
+    --ember:#c25a3e;
+    --ember-dim: rgba(194,90,62,0.4);
+    --void-blue:#4a8299;
+    --void-dim: rgba(74,130,153,0.4);
+    --gold:#ab8c54;
+    color-scheme: dark;
+
+    --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;
+    --font-body: 'Spectral', 'Palatino Linotype', Georgia, serif;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--ink);
+    color:var(--parchment);
+    font-family:var(--font-body);
+    margin:0;
+    padding-inline:0;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+
+  .wrap{
+    max-width:760px;
+    margin-inline:auto;
+    padding-inline:24px;
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    .hero-title{animation:riseIn 1.1s cubic-bezier(.2,.7,.2,1) both;}
+    .hero-sub{animation:riseIn 1.1s cubic-bezier(.2,.7,.2,1) .18s both;}
+    .hero-byline{animation:riseIn 1.1s cubic-bezier(.2,.7,.2,1) .32s both;}
+  }
+  @keyframes riseIn{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    width:100%;
+    overflow:hidden;
+    background:#000;
+    border-bottom:1px solid var(--line);
+  }
+  .hero img{
+    width:100%;
+    height:clamp(360px, 62vw, 620px);
+    object-fit:cover;
+    object-position:center 30%;
+    opacity:.82;
+  }
+  .hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      linear-gradient(180deg, rgba(11,12,15,.92) 0%, rgba(11,12,15,.52) 20%, rgba(11,12,15,.08) 38%, rgba(11,12,15,0) 62%, rgba(11,12,15,.9) 100%);
+  }
+  .hero-content{
+    position:absolute;
+    left:0; right:0; top:0;
+    padding:40px 24px 0;
+    max-width:760px;
+    margin-inline:auto;
+  }
+  .hero-eyebrow{
+    font-family:var(--font-body);
+    font-style:italic;
+    color:var(--muted);
+    font-size:.92rem;
+    margin:0 0 10px;
+    letter-spacing:.01em;
+  }
+  .hero-title{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-optical-sizing:auto;
+    font-size:clamp(2.3rem, 7.2vw, 3.8rem);
+    line-height:1.02;
+    margin:0;
+    text-wrap:balance;
+    color:var(--parchment);
+  }
+  .hero-title em{
+    display:block;
+    font-style:italic;
+    font-weight:400;
+    color:var(--ember);
+    font-size:.52em;
+    margin-top:.3em;
+  }
+  .hero-byline{
+    margin:18px 0 0;
+    font-family:var(--font-display);
+    font-size:1rem;
+    letter-spacing:.04em;
+    color:var(--gold);
+  }
+  .hero-byline span{color:var(--muted); font-family:var(--font-body); font-style:italic; letter-spacing:0;}
+
+  /* ---------- Section rhythm ---------- */
+  section{padding-block:56px;}
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:26px;
+  }
+  .section-num{
+    font-family:var(--font-display);
+    font-style:italic;
+    color:var(--muted);
+    font-size:1rem;
+  }
+  h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(1.5rem, 3.6vw, 1.9rem);
+    margin:0;
+    text-wrap:balance;
+  }
+  .rule{
+    height:1px;
+    background:var(--line);
+    border:0;
+    margin:0 0 26px;
+  }
+
+  /* ---------- Sinopsis ---------- */
+  .synopsis{
+    font-size:1.08rem;
+    line-height:1.72;
+    color:var(--parchment);
+    max-width:62ch;
+  }
+  .synopsis .drop{
+    float:left;
+    font-family:var(--font-display);
+    font-size:3.6rem;
+    line-height:.78;
+    padding:.07em .08em 0 0;
+    color:var(--ember);
+    font-weight:600;
+  }
+  .question{
+    margin-top:22px;
+    font-style:italic;
+    color:var(--gold);
+    border-left:2px solid var(--ember-dim);
+    padding-left:16px;
+  }
+
+  /* ---------- Personajes ---------- */
+  .cast{display:flex; flex-direction:column; gap:34px;}
+  .person{
+    display:grid;
+    grid-template-columns:140px 1fr;
+    gap:20px 24px;
+    align-items:center;
+  }
+  .person.indent{margin-left:clamp(0px,6vw,48px);}
+  .person-portrait{
+    width:140px;
+    aspect-ratio:4/3;
+    border:1px solid var(--line);
+    overflow:hidden;
+    background:var(--surface);
+  }
+  .person-portrait img, .person-portrait svg{
+    width:100%; height:100%;
+    display:block;
+    object-fit:cover;
+  }
+  .person-name{
+    font-family:var(--font-display);
+    font-size:1.5rem;
+    margin:0 0 2px;
+    color:var(--parchment);
+  }
+  .person-role{
+    font-style:italic;
+    color:var(--muted);
+    font-size:.95rem;
+    margin:0 0 10px;
+  }
+  .person-desc{
+    font-size:.98rem;
+    line-height:1.6;
+    max-width:48ch;
+    margin:0 0 12px;
+  }
+  .traits{
+    list-style:none;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 10px;
+    padding:0;
+    margin:0;
+  }
+  .traits li{
+    font-size:.82rem;
+    font-family:var(--font-body);
+    color:var(--muted);
+    border:1px solid var(--line);
+    padding:3px 10px;
+    border-radius:2px;
+  }
+  .person.kain .traits li{border-color:var(--ember-dim); color:#d8ab9c;}
+  .person.alba .traits li{border-color:var(--void-dim); color:#aecbd6;}
+  .person.emma .traits li{border-color:var(--gold); color:#d9c791;}
+
+  /* ---------- Criaturas y mundo ---------- */
+  .lore-list{
+    display:flex;
+    flex-direction:column;
+    gap:30px;
+  }
+  .lore-item{
+    border-left:2px solid var(--line);
+    padding-left:18px;
+  }
+  .lore-item.threat{border-left-color:var(--ember-dim);}
+  .lore-item.mystery{border-left-color:var(--gold);}
+  .lore-item.place{border-left-color:var(--void-dim);}
+  .lore-name{
+    font-family:var(--font-display);
+    font-size:1.25rem;
+    margin:0 0 2px;
+    color:var(--parchment);
+  }
+  .lore-item.threat .lore-name{color:#d8ab9c;}
+  .lore-item.mystery .lore-name{color:var(--gold);}
+  .lore-item.place .lore-name{color:#aecbd6;}
+  .lore-tag{
+    font-style:italic;
+    color:var(--muted);
+    font-size:.88rem;
+    margin:0 0 8px;
+  }
+  .lore-desc{
+    font-size:.98rem;
+    line-height:1.62;
+    max-width:56ch;
+    margin:0;
+    color:var(--parchment);
+  }
+
+  /* ---------- Diagrama ---------- */
+  figure.map{margin:0;}
+  .map-frame{
+    background:var(--surface);
+    border:1px solid var(--line);
+    padding:20px 14px 10px;
+  }
+  figcaption{
+    font-style:italic;
+    color:var(--muted);
+    font-size:.92rem;
+    margin-top:14px;
+    max-width:56ch;
+  }
+  .legend{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    font-size:.85rem;
+    color:var(--muted);
+  }
+  .legend span{display:inline-flex; align-items:center; gap:7px;}
+  .legend i{width:14px; height:2px; display:inline-block;}
+
+  /* ---------- Saga roadmap ---------- */
+  .saga-list{
+    list-style:none;
+    margin:0; padding:0;
+    border-left:1px solid var(--line);
+  }
+  .saga-item{
+    position:relative;
+    padding:4px 0 32px 28px;
+  }
+  .saga-item:last-child{padding-bottom:0;}
+  .saga-item::before{
+    content:"";
+    position:absolute;
+    left:-5px; top:9px;
+    width:9px; height:9px;
+    border-radius:50%;
+    background:var(--ink);
+    border:1px solid var(--gold);
+  }
+  .saga-item.current::before{
+    background:var(--ember);
+    border-color:var(--ember);
+  }
+  .saga-item.interludio::before{
+    width:6px; height:6px;
+    left:-3.5px;
+    border-style:dashed;
+  }
+  .saga-order{
+    font-family:var(--font-body);
+    font-style:italic;
+    color:var(--muted);
+    font-size:.85rem;
+    display:block;
+    margin-bottom:2px;
+  }
+  .saga-title{
+    font-family:var(--font-display);
+    font-size:1.2rem;
+    color:var(--parchment);
+    margin:0 0 4px;
+  }
+  .saga-item.interludio .saga-title{
+    font-size:1rem;
+    font-style:italic;
+    color:var(--muted);
+  }
+  .saga-tag{
+    display:inline-block;
+    font-size:.72rem;
+    letter-spacing:.03em;
+    color:var(--ink);
+    background:var(--ember);
+    padding:2px 8px;
+    margin-left:10px;
+    position:relative;
+    top:-2px;
+  }
+  .saga-desc{
+    font-size:.95rem;
+    color:var(--muted);
+    margin:0;
+    max-width:52ch;
+    line-height:1.55;
+  }
+
+  /* ---------- CTA ---------- */
+  .cta{
+    display:flex;
+    gap:24px;
+    align-items:center;
+    background:var(--surface);
+    border:1px solid var(--line);
+    padding:24px;
+    flex-wrap:wrap;
+  }
+  .cta img{
+    width:150px;
+    flex-shrink:0;
+    border:1px solid var(--line);
+  }
+  .cta-text{flex:1; min-width:220px;}
+  .cta-text p{margin:0 0 14px; line-height:1.6; color:var(--parchment);}
+  .cta-label{
+    font-family:var(--font-display);
+    font-size:1.2rem;
+    margin:0 0 8px;
+  }
+  .cta-button{
+    display:inline-block;
+    font-family:var(--font-body);
+    font-size:.95rem;
+    color:var(--ink);
+    background:var(--gold);
+    text-decoration:none;
+    padding:10px 20px;
+    border:1px solid var(--gold);
+    transition:background .15s ease, color .15s ease;
+  }
+  .cta-button:hover{background:transparent; color:var(--gold);}
+  .cta-button:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+
+  .author{
+    display:flex;
+    gap:28px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .author-mark{
+    width:46px;
+    flex-shrink:0;
+    padding-top:6px;
+  }
+  .author-mark svg{width:100%; height:auto;}
+  .author-text{flex:1; min-width:240px;}
+  .author-name{
+    font-family:var(--font-display);
+    font-size:1.3rem;
+    margin:0 0 2px;
+    color:var(--gold);
+  }
+  .author-name{margin-bottom:16px;}
+  .author-text p.bio{
+    font-size:1rem;
+    line-height:1.7;
+    max-width:58ch;
+    margin:0 0 14px;
+  }
+  .author-text p.bio:last-child{margin-bottom:0;}
+
+  footer{
+    border-top:1px solid var(--line);
+    padding-block:30px 48px;
+    color:var(--muted);
+    font-size:.85rem;
+  }
+  footer .gold{color:var(--gold); font-family:var(--font-display); font-style:italic;}
+  .footer-top{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .footer-rights{
+    margin:14px 0 0;
+    font-size:.78rem;
+    line-height:1.5;
+    color:var(--muted);
+    opacity:.75;
+    max-width:60ch;
+  }
+
+  @media (max-width:520px){
+    .person{grid-template-columns:96px 1fr;}
+    .person-portrait{width:96px;}
+    .person.indent{margin-left:0;}
+    .cta{flex-direction:column; align-items:flex-start;}
+    .cta img{width:120px;}
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<div class="hero">
+  <img src="hero-atmosfera.jpg" alt="Kain, encapuchado, entre dos mundos que colisionan: uno de hielo y rayos azules, otro de fuego y rayos rojos.">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Saga Choque de Mundos · Libro I</p>
+    <h1 class="hero-title">Choque de Mundos<em>La Guerra del Vacío</em></h1>
+    <p class="hero-byline">Airas del Valle <span>— fantasía épica de supervivencia</span></p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section id="sinopsis">
+  <div class="section-head">
+    <span class="section-num">I.</span>
+    <h2>Sinopsis</h2>
+  </div>
+  <hr class="rule">
+  <p class="synopsis">
+    <span class="drop">L</span>a Guerra del Vacío ha comenzado. Kain, perseguido por las sombras de su pasado, intenta reconstruir su vida en la Ciudad Blanca, el último bastión de la humanidad. Años atrás, los grises —criaturas nacidas de la peor pesadilla— arrasaron la metrópolis. Ahora, algo aún más inquietante se agita entre los supervivientes: un plan oscuro que amenaza con romper lo poco que queda en pie.
+  </p>
+  <p class="synopsis">
+    Tras un brutal y calculado ataque, Kain se ve obligado a adentrarse en las profundidades prohibidas de Santiago de Compostela. A su lado, Alba, la temida Rompedora de Huesos, tan letal como enigmática. Su misión es clara... y desesperada: rescatar a Emma. Pero el Vacío ya ha empezado a tejer sus hilos.
+  </p>
+  <p class="question">¿Vale la pena seguir luchando... cuando todo parece perdido?</p>
+</section>
+
+<section id="personajes">
+  <div class="section-head">
+    <span class="section-num">II.</span>
+    <h2>Quiénes cruzan el Vacío</h2>
+  </div>
+  <hr class="rule">
+  <div class="cast">
+
+    <div class="person kain">
+      <div class="person-portrait">
+        <svg viewBox="0 0 320 240" role="img" aria-label="Emblema de Kain: una espada envuelta en sombra.">
+          <defs>
+            <linearGradient id="bgKain" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#15181b"/>
+              <stop offset="1" stop-color="#08090a"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="240" fill="url(#bgKain)"/>
+          <g stroke="var(--gold)" stroke-width="1.4" fill="none" opacity="0.85">
+            <line x1="160" y1="46" x2="160" y2="186"/>
+            <line x1="128" y1="78" x2="192" y2="78"/>
+            <path d="M160,186 L148,206 L160,222 L172,206 Z"/>
+          </g>
+          <circle cx="160" cy="46" r="4" fill="var(--gold)"/>
+        </svg>
+      </div>
+      <div>
+        <p class="person-name">Kain</p>
+        <p class="person-role">Al que en la Ciudad Blanca llaman El Asesino</p>
+        <p class="person-desc">Carga con un pasado oscuro, el mismo por el que los demás le juzgan.</p>
+        <ul class="traits"><li>Espada</li><li>Capa oscura</li><li>Sombras del pasado</li></ul>
+      </div>
+    </div>
+
+    <div class="person alba indent">
+      <div class="person-portrait">
+        <svg viewBox="0 0 320 240" role="img" aria-label="Retrato ilustrado de Alba, cabello negro largo, capa negra y dagas gemelas cruzadas, con un leve resplandor rojizo.">
+          <defs>
+            <linearGradient id="bgAlba" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#1c1215"/>
+              <stop offset="1" stop-color="#0a0708"/>
+            </linearGradient>
+            <radialGradient id="glowAlba" cx="0.78" cy="0.18" r="0.5">
+              <stop offset="0" stop-color="var(--ember)" stop-opacity="0.55"/>
+              <stop offset="1" stop-color="var(--ember)" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="320" height="240" fill="url(#bgAlba)"/>
+          <rect width="320" height="240" fill="url(#glowAlba)"/>
+          <!-- hair, behind cloak -->
+          <path d="M118,56 C96,78 88,130 96,196 L104,236 L128,236 L120,150 C118,112 120,82 130,62 Z" fill="#0d0a0b"/>
+          <path d="M202,56 C224,78 232,130 224,196 L216,236 L192,236 L200,150 C202,112 200,82 190,62 Z" fill="#0d0a0b"/>
+          <!-- cloak / shoulders -->
+          <path d="M95,240 C95,176 118,140 160,140 C202,140 225,176 225,240 Z" fill="#111416"/>
+          <!-- head -->
+          <ellipse cx="160" cy="104" rx="37" ry="44" fill="#121516"/>
+          <path d="M123,104 C121,76 138,58 160,58 C182,58 199,76 197,104" fill="none" stroke="var(--ember)" stroke-width="1" opacity="0.45"/>
+          <!-- crossed daggers -->
+          <g stroke-linecap="round">
+            <path d="M128,186 L196,150" stroke="var(--ember)" stroke-width="2.4" opacity="0.9"/>
+            <path d="M128,150 L196,186" stroke="var(--ember)" stroke-width="2.4" opacity="0.9"/>
+            <path d="M121,193 L133,179" stroke="#d9c7b8" stroke-width="3"/>
+            <path d="M121,143 L133,157" stroke="#d9c7b8" stroke-width="3"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <p class="person-name">Alba <span style="font-family:var(--font-body); font-style:italic; color:var(--muted); font-size:.9rem;">— Rompedora de Huesos</span></p>
+        <p class="person-role">Superviviente con algo que demostrar</p>
+        <p class="person-desc">Joven y decidida a demostrar su valentía. Pero su pasado es mucho más grande de lo que ella misma piensa.</p>
+        <ul class="traits"><li>Dagas gemelas</li><li>Cabello negro largo</li><li>Capa negra</li></ul>
+      </div>
+    </div>
+
+    <div class="person emma">
+      <div class="person-portrait">
+        <svg viewBox="0 0 320 240" role="img" aria-label="Retrato ilustrado de Emma, cabello rubio, capa negra y arco al hombro, con un leve resplandor azulado.">
+          <defs>
+            <linearGradient id="bgEmma" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#101a1e"/>
+              <stop offset="1" stop-color="#070a0b"/>
+            </linearGradient>
+            <radialGradient id="glowEmma" cx="0.22" cy="0.16" r="0.5">
+              <stop offset="0" stop-color="var(--void-blue)" stop-opacity="0.55"/>
+              <stop offset="1" stop-color="var(--void-blue)" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="320" height="240" fill="url(#bgEmma)"/>
+          <rect width="320" height="240" fill="url(#glowEmma)"/>
+          <!-- hair, behind cloak -->
+          <path d="M116,54 C92,70 86,118 98,178 L108,214 L126,210 L116,146 C112,106 116,78 132,60 Z" fill="var(--gold)" opacity="0.85"/>
+          <path d="M204,54 C228,70 234,118 222,178 L212,214 L194,210 L204,146 C208,106 204,78 188,60 Z" fill="var(--gold)" opacity="0.85"/>
+          <!-- cloak / shoulders -->
+          <path d="M95,240 C95,176 118,140 160,140 C202,140 225,176 225,240 Z" fill="#0f1315"/>
+          <!-- head -->
+          <ellipse cx="160" cy="104" rx="37" ry="44" fill="#141a1b"/>
+          <path d="M123,104 C121,76 138,58 160,58 C182,58 199,76 197,104" fill="none" stroke="var(--void-blue)" stroke-width="1" opacity="0.5"/>
+          <!-- bow, diagonal across body -->
+          <path d="M108,226 C128,150 128,90 112,52" fill="none" stroke="#c9b48a" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M108,226 C122,160 122,100 112,52" fill="none" stroke="#e9e2d1" stroke-width="0.8" opacity="0.6"/>
+        </svg>
+      </div>
+      <div>
+        <p class="person-name">Emma</p>
+        <p class="person-role">La fiel amiga y compañera de Kain</p>
+        <p class="person-desc">Seguiría a Kain a cualquier parte si él lo necesitase. Por desgracia, es ella quien necesitará ayuda.</p>
+        <ul class="traits"><li>Arco</li><li>Cabello rubio</li><li>Capa negra</li></ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="mundo">
+  <div class="section-head">
+    <span class="section-num">III.</span>
+    <h2>Lo que acecha</h2>
+  </div>
+  <hr class="rule">
+  <div class="lore-list">
+
+    <div class="lore-item threat">
+      <p class="lore-name">Los grises</p>
+      <p class="lore-tag">Criaturas del horror</p>
+      <p class="lore-desc">Los supervivientes creen que son originarios de la Nebulosa y que desean acabar con la humanidad.</p>
+    </div>
+
+    <div class="lore-item mystery">
+      <p class="lore-name">La Mano Negra</p>
+      <p class="lore-tag">Lo que se dice en voz baja</p>
+      <p class="lore-desc">Se dice que es quien está detrás del Día del Juicio Final, orquestando todo según su oscuro plan.</p>
+    </div>
+
+    <div class="lore-item place">
+      <p class="lore-name">La Nebulosa</p>
+      <p class="lore-tag">La barrera que nadie cruza dos veces</p>
+      <p class="lore-desc">Una barrera compuesta por girones de nubes alrededor de la metrópolis. Nadie que haya entrado en ella ha regresado.</p>
+    </div>
+
+  </div>
+</section>
+
+<section id="mapa">
+  <div class="section-head">
+    <span class="section-num">IV.</span>
+    <h2>Dónde empieza la historia</h2>
+  </div>
+  <hr class="rule">
+  <figure class="map">
+    <div class="map-frame">
+      <svg viewBox="0 0 600 760" role="img" aria-label="Mapa conceptual: los grises arrasan la metrópolis años atrás; Kain reconstruye su vida en la Ciudad Blanca; un ataque calculado lo obliga a huir con Alba a las profundidades de Santiago de Compostela; de ahí nacen dos hilos paralelos, la misión de rescatar a Emma y el avance silencioso del Vacío, que confluyen en la pregunta de si vale la pena seguir luchando." style="width:100%;height:auto;font-family:var(--font-body);">
+        <defs>
+          <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- Node 1 -->
+        <rect x="150" y="14" width="300" height="56" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+        <text x="300" y="38" text-anchor="middle" font-size="13" fill="currentColor" opacity="0.75">Los grises arrasan la metrópolis</text>
+        <text x="300" y="56" text-anchor="middle" font-size="11" font-style="italic" fill="var(--muted)">años atrás</text>
+
+        <line x1="300" y1="70" x2="300" y2="104" stroke="currentColor" stroke-width="1" opacity="0.6" marker-end="url(#arrowhead)"/>
+        <text x="314" y="90" font-size="10.5" font-style="italic" fill="var(--muted)">años después</text>
+
+        <!-- Node 2 -->
+        <rect x="150" y="106" width="300" height="56" fill="none" stroke="currentColor" stroke-width="1" opacity="0.8"/>
+        <text x="300" y="130" text-anchor="middle" font-size="13" fill="currentColor">La Ciudad Blanca</text>
+        <text x="300" y="148" text-anchor="middle" font-size="11" font-style="italic" fill="var(--muted)">último bastión · Kain reconstruye su vida</text>
+
+        <line x1="300" y1="162" x2="300" y2="196" stroke="currentColor" stroke-width="1" opacity="0.8" marker-end="url(#arrowhead)"/>
+        <text x="314" y="182" font-size="10.5" font-style="italic" fill="var(--muted)">un ataque calculado</text>
+
+        <!-- Node 3 -->
+        <rect x="150" y="198" width="300" height="56" fill="none" stroke="var(--ember)" stroke-width="1.2"/>
+        <text x="300" y="222" text-anchor="middle" font-size="13" fill="var(--ember)">Huida forzada</text>
+        <text x="300" y="240" text-anchor="middle" font-size="11" font-style="italic" fill="var(--muted)">lo poco que queda en pie, tambaleándose</text>
+
+        <line x1="300" y1="254" x2="300" y2="288" stroke="currentColor" stroke-width="1" opacity="0.8" marker-end="url(#arrowhead)"/>
+        <text x="314" y="274" font-size="10.5" font-style="italic" fill="var(--muted)">con Alba, la Rompedora de Huesos</text>
+
+        <!-- Node 4 -->
+        <rect x="120" y="290" width="360" height="60" fill="none" stroke="currentColor" stroke-width="1" opacity="0.85"/>
+        <text x="300" y="315" text-anchor="middle" font-size="13" fill="currentColor">Profundidades prohibidas</text>
+        <text x="300" y="333" text-anchor="middle" font-size="11" font-style="italic" fill="var(--muted)">bajo Santiago de Compostela</text>
+
+        <!-- Split -->
+        <path d="M250,350 C170,390 150,420 150,448" fill="none" stroke="var(--void-blue)" stroke-width="1.3" marker-end="url(#arrowhead)"/>
+        <path d="M350,350 C430,390 450,420 450,448" fill="none" stroke="var(--ember)" stroke-width="1.3" marker-end="url(#arrowhead)"/>
+
+        <text x="130" y="400" font-size="10.5" font-style="italic" fill="var(--void-blue)">misión</text>
+        <text x="455" y="400" text-anchor="end" font-size="10.5" font-style="italic" fill="var(--ember)">amenaza</text>
+
+        <!-- Node 5a -->
+        <rect x="30" y="450" width="230" height="64" fill="none" stroke="var(--void-blue)" stroke-width="1.1"/>
+        <text x="145" y="476" text-anchor="middle" font-size="13" fill="var(--void-blue)">Rescatar a Emma</text>
+        <text x="145" y="494" text-anchor="middle" font-size="11" font-style="italic" fill="var(--muted)">la misión, clara y desesperada</text>
+
+        <!-- Node 5b -->
+        <rect x="340" y="450" width="230" height="64" fill="none" stroke="var(--ember)" stroke-width="1.1"/>
+        <text x="455" y="476" text-anchor="middle" font-size="13" fill="var(--ember)">El Vacío teje sus hilos</text>
+        <text x="455" y="494" text-anchor="middle" font-size="11" font-style="italic" fill="var(--muted)">la amenaza que crece debajo de todos</text>
+
+        <!-- Converge -->
+        <path d="M145,514 C145,560 260,580 300,596" fill="none" stroke="var(--void-blue)" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+        <path d="M455,514 C455,560 340,580 300,596" fill="none" stroke="var(--ember)" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+
+        <!-- Node 6 -->
+        <rect x="110" y="598" width="380" height="80" fill="none" stroke="var(--gold)" stroke-width="1.3"/>
+        <text x="300" y="630" text-anchor="middle" font-size="13.5" font-style="italic" fill="var(--gold)">¿Vale la pena seguir luchando...</text>
+        <text x="300" y="652" text-anchor="middle" font-size="13.5" font-style="italic" fill="var(--gold)">cuando todo parece perdido?</text>
+      </svg>
+    </div>
+    <figcaption>El punto de partida de <em>La Guerra del Vacío</em>: lo que ocurrió, lo que obliga a Kain y Alba a moverse, y los dos hilos — misión y amenaza — que se cruzan desde la primera página.</figcaption>
+  </figure>
+</section>
+
+<section id="saga">
+  <div class="section-head">
+    <span class="section-num">V.</span>
+    <h2>La saga</h2>
+  </div>
+  <hr class="rule">
+  <ol class="saga-list">
+    <li class="saga-item current">
+      <span class="saga-order">Libro I</span>
+      <p class="saga-title">Choque de Mundos: La Guerra del Vacío <span class="saga-tag">disponible</span></p>
+      <p class="saga-desc">El punto de partida: la caída de la metrópolis, la Ciudad Blanca, y el descenso a las profundidades de Santiago de Compostela.</p>
+    </li>
+    <li class="saga-item">
+      <span class="saga-order">Libro II</span>
+      <p class="saga-title">Project: Ashes of the Fallen</p>
+      <p class="saga-desc">Lo que queda cuando el Vacío ha terminado de tejer sus hilos.</p>
+    </li>
+    <li class="saga-item interludio">
+      <span class="saga-order">Spin-off</span>
+      <p class="saga-title">Project Empty</p>
+      <p class="saga-desc">El puente entre lo que ya ha caído y lo que todavía está por llegar.</p>
+    </li>
+    <li class="saga-item">
+      <span class="saga-order">Libro III</span>
+      <p class="saga-title">El Despertar de Primavera</p>
+      <p class="saga-desc">El cierre del ciclo que empezó bajo Santiago de Compostela.</p>
+    </li>
+  </ol>
+</section>
+
+<section id="consigue">
+  <div class="cta">
+    <img src="libro-objeto.jpg" alt="Edición de Choque de Mundos: La Guerra del Vacío">
+    <div class="cta-text">
+      <p class="cta-label">Choque de Mundos: La Guerra del Vacío</p>
+      <p>Ya disponible en Amazon, en tapa dura y tapa blanda.</p>
+      <a class="cta-button" href="https://amzn.eu/d/0bNlpmGw">Consíguelo en Amazon</a>
+    </div>
+  </div>
+</section>
+
+<section id="autor">
+  <div class="section-head">
+    <span class="section-num">VI.</span>
+    <h2>Acerca del autor</h2>
+  </div>
+  <hr class="rule">
+  <div class="author">
+    <div class="author-mark" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none" stroke="var(--gold)" stroke-width="1"><path d="M20 4 C10 10 8 20 8 28 C8 34 13 37 20 37 C27 37 32 34 32 28 C32 20 30 10 20 4 Z"/><path d="M20 4 L20 37" opacity="0.5"/></svg>
+    </div>
+    <div class="author-text">
+      <p class="author-name">Airas del Valle</p>
+      <p class="bio">Nació en Ourense, Galicia, y reside actualmente en Santiago de Compostela, la misma ciudad bajo la que se abren las profundidades de esta novela. Desde muy pequeño sintió una profunda conexión con las historias: disfrutaba escuchándolas y viviéndolas a través de la televisión y la lectura, lo que despertó en él el deseo de crear las suyas propias.</p>
+      <p class="bio">Con el paso del tiempo, esa pasión se convirtió en una necesidad creativa, llevándole a desarrollar mundos, personajes y relatos que reflejan su imaginación y su forma de entender la narrativa. Influenciado tanto por la cultura audiovisual como por la literatura, su estilo busca combinar emoción, ritmo y cercanía con el lector.</p>
+      <p class="bio"><em>Choque de Mundos</em> es su primera novela, un proyecto en el que vuelca años de ideas, inspiración y ganas de contar una historia propia.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap" style="width:100%;">
+    <div class="footer-top">
+      <span>Saga <span class="gold">Choque de Mundos</span> — Airas del Valle</span>
+      <span>© 2026</span>
+    </div>
+    <p class="footer-rights">© 2026 Airas del Valle. Todos los derechos reservados. Queda prohibida la reproducción total o parcial de los textos e imágenes de esta web sin autorización del autor.</p>
+  </div>
+</footer>
